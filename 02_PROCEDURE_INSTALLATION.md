@@ -21,7 +21,6 @@ Il s'agit d'enregistrer le Switch et la borne AP Cisco pour qu'ils soient autori
 3. **Adresse IP :** `192.168.50.253`
 4. **Secret partagé :** Saisir un secret fort (ex: `P@ssw0rdRadiusIRIS!`). *Cette clé sera indispensable côté Cisco*.
 
-![NPS - Clients RADIUS enregistrés](./images/clients_radius.png)
 
 ### 1.2 Configuration des Stratégies (VLAN Dynamique)
 1. Créer une nouvelle **Stratégie réseau** (ex: `Acces-8021x-Etudiants`).
