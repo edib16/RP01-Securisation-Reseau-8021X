@@ -1,6 +1,6 @@
-# RP06 - Sécurisation des accès réseau 802.1X (Standard Microsoft)
+# RP01 - Sécurisation des accès réseau 802.1X (Standard Microsoft)
 
-> 🌐 **Aperçu Visuel :** Retrouvez une présentation illustrée de ce projet sur mon portfolio : [edib16.github.io/Portfolio/#RP06](https://edib16.github.io/Portfolio/#RP06)
+> 🌐 **Aperçu Visuel :** Retrouvez une présentation illustrée de ce projet sur mon portfolio : [edib16.github.io/Portfolio/#RP01](https://edib16.github.io/Portfolio/#RP01)
 
 > **Auteur :** Edib Saoud
 > **Date :** 10/11/2025 - 12/04/2026
