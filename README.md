@@ -28,23 +28,23 @@ L'objectif était de déployer le standard **802.1X** en utilisant une architect
 | | **Mettre à disposition un service informatique** | Implémentation du contrôle d'accès sécurisé basé sur l'authentification EAP. |
 | **Bloc 3 : Cybersécurité des services informatiques** | **Protéger l'infrastructure de l'organisation** | Blocage physique (couche 2) des accès non-identifiés via le protocole 802.1X. |
 
-## 4. Planning de Réalisation (Diagramme de Gantt)
+## 4. Planning de Realisation (Gantt)
 
 ```mermaid
 gantt
-    title Sécurisation 802.1X (NPS/Cisco)
+    title Securisation 802.1X (NPS/Cisco)
     dateFormat  YYYY-MM
     axisFormat  %m/%y
     
-    section Cadrage & Analyse
-    Analyse de l'existant & Architecture :done, des1, 2025-11-01, 30d
+    section Cadrage et Analyse
+    Analyse de l'existant et Architecture :done, des1, 2025-11-01, 30d
     
-    section Implémentation
+    section Implementation
     Installation Serveur NPS (Windows)  :active, des2, 2025-12-01, 30d
-    Configuration Cisco AAA & 802.1X    :        des3, 2026-01-01, 30d
+    Configuration Cisco AAA et 802.1X    :        des3, 2026-01-01, 30d
     Mise en place des VLANs dynamiques  :        des4, 2026-02-01, 30d
     
     section Validation
-    Tests d'intégration et Recette      :        des5, 2026-03-01, 30d
-    Documentation finale & Livraison    :        des6, 2026-04-01, 12d
+    Tests d'integration et Recette      :        des5, 2026-03-01, 30d
+    Documentation finale et Livraison    :        des6, 2026-04-01, 12d
 ```
