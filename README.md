@@ -1,39 +1,84 @@
-# RP01 - Sécurisation des accès réseau 802.1X (Standard Microsoft)
+# RP01 - Sécurisation réseau 802.1X / NPS / Active Directory
 
-> 🌐 **Aperçu Visuel :** Retrouvez une présentation illustrée de ce projet sur mon portfolio : [edib16.github.io/Portfolio/#RP01](https://edib16.github.io/Portfolio/#RP01)
+> **Auteur :** Edib Saoud  
+> **Période :** 10/11/2025 - 12/04/2026  
+> **Contexte :** BTS SIO SISR - IRIS Mediaschool  
+> **Objectif :** Remplacer les accès réseau permissifs (PSK/ports ouverts) par une authentification nominative 802.1X adossée à AD.
 
-> **Auteur :** Edib Saoud
-> **Date :** 10/11/2025 - 12/04/2026
-> **Contexte :** Projet BTS SIO SISR - IRIS Mediaschool
+---
 
-## 1. Contexte du Projet
+## Vue d'ensemble du projet
 
-Ce projet majeur d'une durée de 6 mois a été mené pour résoudre une faille de sécurité importante au sein de l'infrastructure de l'école IRIS Mediaschool. Auparavant, les accès réseau (Wi-Fi et filaires) reposaient sur des clés partagées vulnérables ou des ports ouverts sans aucune authentification, limitant grandement la traçabilité.
+Cette réalisation met en place une architecture AAA complète :
+- **Supplicant** : postes Windows / smartphones.
+- **Authenticators** : switch Cisco 2960-S + AP Cisco C9105 (EWC).
+- **RADIUS** : Windows Server 2022 avec rôle **NPS**.
+- **Référentiel d'identité** : **Active Directory** `iris.local`.
+- **Segmentation dynamique** : affectation VLAN selon groupe AD.
 
-L'objectif était de déployer le standard **802.1X** en utilisant une architecture **AAA (Authentication, Authorization, Accounting)**. La solution devait s'appuyer sur des équipements Cisco et un serveur RADIUS (NPS) sous Windows Server 2022, lié à l'Active Directory.
+### Équipements et adresses de management
 
-## 2. Sommaire de la Documentation
+| Équipement | Rôle | IP |
+|:--|:--|:--|
+| Windows Server 2022 | AD DS + NPS | `192.168.50.200` |
+| Switch `SW1-IRIS` | 802.1X filaire | `192.168.50.253` |
+| Routeur `R1-IRIS` | Inter-VLAN + ACL + VRRP | `192.168.50.254` (VIP) / `192.168.50.251` (physique) |
+| AP `AP1-IRIS` | Wi-Fi 802.1X | `192.168.50.150` |
+| Debian `debian-rp` | TFTP + Syslog + DHCP Kea + VRRP backup | `192.168.50.100` / `192.168.50.252` |
 
-1. [Dossier de Choix Technique](01_DOSSIER_CHOIX_TECHNIQUE.md) : Analyse de l'existant, justification de l'architecture RADIUS/NPS et plan d'adressage.
-2. [Procédure d'Installation](02_PROCEDURE_INSTALLATION.md) : Déploiement étape par étape du rôle NPS, paramétrage des Switchs Cisco et affectation des VLANs dynamiques.
-3. [Mode Opératoire](03_MODE_OPERATOIRE.md) : Guide d'audit des journaux NPS (traçabilité) et diagnostic de panne niveau 1.
-4. [Cahier de Recette](04_CAHIER_DE_RECETTE.md) : Validation du blocage des ports et de l'authentification avec les comptes AD.
+### Segmentation validée
 
-## 3. Compétences SISR Mobilisées (Blocs BTS SIO)
+| Groupe AD | VLAN | Sous-réseau | Plage DHCP (source conf) |
+|:--|:--:|:--|:--|
+| `G_VLAN10_Iris` | 10 | `192.168.10.0/24` | `192.168.10.10 - 192.168.10.200` |
+| `G_VLAN20_Profs` | 20 | `192.168.20.0/24` | `192.168.20.10 - 192.168.20.200` |
+| `G_VLAN30_Admin` | 30 | `192.168.30.0/24` | `192.168.30.10 - 192.168.30.200` |
+| (invités) | 40 | `192.168.40.0/24` | Dépend du serveur DHCP central |
+| management | 50 | `192.168.50.0/24` | `192.168.50.100 - 192.168.50.150` |
+| pré-auth | 99 | VLAN de quarantaine L2 | Pas d'usage utilisateur final |
 
-| Bloc de Compétences | Compétences spécifiques validées dans ce projet | Preuves / Exemples concrets |
-|:---|:---|:---|
-| **Bloc 1 : Support et mise à disposition de services informatiques** | **Gérer le patrimoine informatique** | Paramétrage avancé des équipements Cisco (Switchs et Bornes AP) et d'un serveur Windows Server 2022. |
-| | **Travailler en mode projet** | Conduite du projet sur 6 mois (Agile), du recueil du besoin avec la MOA jusqu'à la phase de recette. |
-| | **Mettre à disposition un service informatique** | Implémentation du contrôle d'accès sécurisé basé sur l'authentification EAP. |
-| **Bloc 3 : Cybersécurité des services informatiques** | **Protéger l'infrastructure de l'organisation** | Blocage physique (couche 2) des accès non-identifiés via le protocole 802.1X. |
+---
 
-## 4. Chronologie du Projet
+## Chronologie réelle de mise en œuvre
 
-| Période | Phase de Réalisation | Objectif Clé |
-|:---|:---|:---|
-| **Mois 1-2** | Cadrage et Analyse | Audit des failles et design de l'architecture AAA. |
-| **Mois 3-4** | Implémentation NPS | Déploiement du serveur RADIUS et stratégies réseau. |
-| **Mois 5** | Configuration Cisco | Activation du 802.1X sur les Switchs et Bornes AP. |
-| **Mois 6** | Recette et Livraison | Validation des accès dynamiques et remise de la doc. |
+1. Installation de Windows Server 2022 et configuration IP.
+2. Promotion en contrôleur de domaine (`iris.local`) via CLI.
+3. Création des OU, groupes et utilisateurs AD via PowerShell.
+4. Installation du rôle NPS.
+5. Configuration NPS en GUI : clients RADIUS + policies VLAN 10/20/30.
+6. Configuration Cisco (switch, AP, routeur) pour AAA/RADIUS/802.1X.
+7. Mise en place des services complémentaires : NTP, TFTP backup, Syslog/SNMP, DHCP Kea, VRRP.
+8. Tests fonctionnels (laptops Windows + téléphones) et validation des VLAN dynamiques.
 
+---
+
+## Parcours de lecture de la documentation
+
+1. [01_DOSSIER_CHOIX_TECHNIQUE.md](01_DOSSIER_CHOIX_TECHNIQUE.md)  
+   Décisions techniques, architecture cible, adressage, services complémentaires.
+2. [02_PROCEDURE_INSTALLATION.md](02_PROCEDURE_INSTALLATION.md)  
+   Guide d'installation détaillé, étape par étape (CLI + GUI).
+3. [03_MODE_OPERATOIRE.md](03_MODE_OPERATOIRE.md)  
+   Exploitation quotidienne, maintenance, dépannage.
+4. [04_CAHIER_DE_RECETTE.md](04_CAHIER_DE_RECETTE.md)  
+   Tests réalisés, résultats observés, conclusion de recette.
+
+---
+
+## Références techniques (run conf)
+
+- `runconf-r1-iris.txt` : configuration du routeur `R1-IRIS`.
+- `runconf-sw1-iris.txt` : configuration du switch `SW1-IRIS`.
+- `runconf-ap1-iris.txt` : configuration de la borne/AP `AP1-IRIS`.
+- `runconf-routeur-virtuel-debian.txt` : configuration Debian (`interfaces`, `keepalived`, `kea`).
+- `Fiche RP01 Edib Saoud.pdf` : contexte et cadrage de la réalisation.
+
+---
+
+## Où déposer les preuves (captures)
+
+| Source | Dossier | Ce qu'il faut capturer |
+|:--|:--|:--|
+| `02_PROCEDURE_INSTALLATION.md` | `./preuves/02_procedure_installation/` | 6 captures: IP serveur, AD domain, ADUC (OU/groupes), `show run` SW1, `show interfaces trunk`, profile AP `aaa-override` |
+| `03_MODE_OPERATOIRE.md` | `./preuves/03_mode_operatoire/` | 1 capture: event NPS de succes (utilisateur + policy appliquee) |
+| `04_CAHIER_DE_RECETTE.md` | Aucun dépôt requis | aucune capture demandée pour cette remise |

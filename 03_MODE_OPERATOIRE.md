@@ -1,47 +1,160 @@
-# Mode Opératoire - Dépannage RADIUS / 802.1X
+# Mode opératoire d'exploitation (N2/N3)
 
-> **Auteur :** Edib Saoud
-> **Date :** 10/11/2025 - 12/04/2026
-> **Version :** 1.0
-> **Cible :** Support Informatique Niveau 2 / Administrateurs
-
----
-
-## 1. Dépannage côté NPS (Windows Server)
-
-**Cas d'usage :** Un utilisateur (étudiant ou prof) signale qu'il n'a "pas d'Internet" en branchant son PC en salle de cours ou sur le Wi-Fi de l'école.
-
-L'Observateur d'événements Windows de `192.168.50.200` est le meilleur outil de diagnostic.
-1. Ouvrir l'**Observateur d'événements** (`eventvwr.msc`).
-2. Naviguer vers : `Rôles de serveur` > `Serveur de stratégie réseau et d'accès (NPS)`.
-3. Chercher les événements de refus (Erreur / Avertissement) :
-   - **Raison "Utilisateur inconnu ou mot de passe incorrect" :** Le compte AD est expiré, verrouillé ou le mot de passe saisi est faux.
-   - **Raison "Incompatibilité de méthode d'authentification" :** Le client essaie de se connecter sans utiliser PEAP-MS-CHAP v2.
-   - **Raison "Condition de stratégie réseau non satisfaite" :** L'utilisateur n'appartient à aucun groupe AD défini dans les stratégies NPS (ex: Il n'est ni prof, ni étudiant).
+> **Auteur :** Edib Saoud  
+> **Version :** 2.0  
+> **Cible :** exploitation système/réseau  
+> **Périmètre :** AD DS, NPS, SW1, AP1, R1, services Debian.
 
 ---
 
-## 2. Dépannage côté Switch Cisco
+## 1. Procédure standard d'onboarding utilisateur
 
-**Cas d'usage :** Vérifier l'état du blocage d'un port spécifique en ligne de commande.
+### 1.1 Créer l'utilisateur (AD en CLI)
 
-### 2.1 Voir si un port est bloqué ou autorisé
-Se connecter au Switch en SSH :
-```cisco
-show dot1x interface GigabitEthernet0/1 details
+```powershell
+Import-Module ActiveDirectory
+$pwd = ConvertTo-SecureString "<PASSWORD_TEMPORAIRE>" -AsPlainText -Force
+
+New-ADUser -Name "prenom.nom" `
+  -SamAccountName "prenom.nom" `
+  -AccountPassword $pwd `
+  -Enabled $true `
+  -Path "OU=Iris_Lab,DC=iris,DC=local"
 ```
-*Vérifier la ligne `Port Status` : elle doit être `AUTHORIZED` si un utilisateur valide est connecté, ou `UNAUTHORIZED` (bloqué) si la demande est échouée ou absente.*
 
-### 2.2 Voir la communication avec le serveur RADIUS
+### 1.2 Assigner le VLAN par appartenance groupe
+
+```powershell
+# Étudiant
+Add-ADGroupMember -Identity "G_VLAN10_Iris" -Members "prenom.nom"
+
+# Prof
+# Add-ADGroupMember -Identity "G_VLAN20_Profs" -Members "prenom.nom"
+
+# Admin
+# Add-ADGroupMember -Identity "G_VLAN30_Admin" -Members "prenom.nom"
+```
+
+### 1.3 Contrôle post-création
+
+```powershell
+Get-ADUser prenom.nom -Properties MemberOf | Select-Object SamAccountName,MemberOf
+```
+
+**Attendu :** le groupe AD correspond au VLAN voulu.
+
+---
+
+## 2. Procédure de contrôle d'accès 802.1X
+
+### 2.1 Côté NPS (Windows)
+
+1. Ouvrir `eventvwr.msc`.
+2. Aller dans `Rôles de serveur > NPS`.
+3. Vérifier :
+   - **acceptation** (ex: ID 6272) ;
+   - **rejet** (mot de passe faux, groupe non conforme, méthode EAP non conforme).
+
+**Capture attendue :**
+- événement succès + nom utilisateur + policy appliquée.
+
+**Chemin de dépôt :** `./preuves/03_mode_operatoire/01_nps_event_succes_policy.png`
+
+### 2.2 Côté switch SW1
+
 ```cisco
+show authentication sessions interface gi1/0/13 details
+show dot1x interface gi1/0/13 details
 show radius statistics
 ```
-*Permet de vérifier si le Switch arrive bien à envoyer les paquets UDP sur les ports 1812/1813 vers l'adresse `192.168.50.200`. Si des paquets sont rejetés, cela signifie souvent que le Secret Partagé est incorrect entre Cisco et NPS.*
+
+Points à contrôler :
+- état `AUTHORIZED` quand l'utilisateur est valide ;
+- serveurs RADIUS joignables ;
+- pas d'explosion d'échecs RADIUS.
+
+### 2.3 Côté AP
+
+```cisco
+show wlan summary
+show aaa servers
+show ntp status
+```
+
+Points à contrôler :
+- WLAN `IRIS-WIFI` actif ;
+- serveur NPS `.200` joignable ;
+- horloge synchronisée.
 
 ---
 
-## 3. Dépannage côté Client (Poste de travail)
+## 3. Exploitation des services complémentaires
 
-Si le serveur NPS ne reçoit aucune demande de connexion :
-1. Vérifier si le service réseau câblé est activé : `services.msc` > **Configuration automatique de réseau câblé** (Il doit être en cours d'exécution).
-2. Si le client est hors-domaine (ex: BYOD), l'utilisateur doit impérativement configurer l'onglet Authentification de sa carte réseau Ethernet et décocher "Utiliser automatiquement mon nom de session Windows" pour qu'une fenêtre lui demande de taper ses identifiants `Iris.local`.
+### 3.1 Sauvegardes de configuration Cisco vers TFTP
+
+Sur chaque équipement Cisco :
+
+```cisco
+write memory
+```
+
+Effet attendu :
+- génération d'un fichier de backup dans les dossiers TFTP :
+  - `/srv/tftp/ROUTER/`
+  - `/srv/tftp/SWITCH/`
+  - `/srv/tftp/AP/`
+
+### 3.2 Vérification NTP
+
+```cisco
+show ntp associations
+show clock detail
+```
+
+Attendu :
+- source NTP interne visible (`192.168.50.200` ou `.100`);
+- horodatage cohérent dans les logs.
+
+### 3.3 Vérification Syslog/SNMP
+
+```cisco
+show logging
+show snmp community
+```
+
+Attendu :
+- envoi de logs vers `192.168.50.100` ;
+- communautés SNMP présentes (en production: stockées en coffre secret).
+
+---
+
+## 4. Matrice de dépannage rapide
+
+| Symptôme | Contrôle prioritaire | Cause probable | Action corrective |
+|:--|:--|:--|:--|
+| Utilisateur n'a pas d'accès | Event Viewer NPS + `show auth sessions` | Mot de passe faux / groupe AD absent | Corriger creds ou appartenance groupe |
+| Utilisateur toujours en VLAN 99 | Attributs NPS `Tunnel-Pvt-Group-ID` | Policy mal ordonnée / condition incomplète | Corriger l'ordre des policies 10/20/30 |
+| Aucun log NPS | `show radius statistics` | Secret RADIUS incohérent ou route KO | Réaligner clé `<SECRET_RADIUS_COMMUN>` et routage |
+| Horodatages incohérents | `show ntp status` | NTP down | Réactiver source NTP interne |
+| Config perdue après reboot | Vérifier archive path TFTP | Backup non exécuté ou TFTP indisponible | Corriger `archive path` puis `wr mem` |
+
+---
+
+## 5. Changement contrôlé (ajout/modif policy VLAN)
+
+1. Créer d'abord le groupe AD cible.
+2. Créer la policy NPS en bas de liste.
+3. Tester avec 1 compte pilote.
+4. Contrôler Event Viewer + VLAN obtenu.
+5. Monter la policy au bon ordre.
+6. Documenter la modification (date, opérateur, impact).
+
+---
+
+## 6. Check-list hebdomadaire d'exploitation
+
+1. Contrôler 5 événements NPS succès + 5 rejets récents.
+2. Vérifier l'horloge de SW1/AP1/R1 (NTP).
+3. Vérifier présence des backups TFTP de la semaine.
+4. Vérifier disponibilité de `192.168.50.200` et `192.168.50.100`.
+5. Vérifier qu'aucun secret n'est exposé dans les exports diffusés.

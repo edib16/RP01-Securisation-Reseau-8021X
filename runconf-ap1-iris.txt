@@ -1,0 +1,316 @@
+AP1-IRIS#show run
+Building configuration...
+
+Current configuration : 10060 bytes
+!
+! Last configuration change at 13:13:53 UTC Wed May 6 2026
+! NVRAM config last updated at 13:09:25 UTC Wed May 6 2026 by admin
+!
+version 17.15
+service timestamps debug datetime msec
+service timestamps log datetime msec show-timezone
+service password-encryption
+no platform punt-keepalive disable-kernel-core
+no platform punt-keepalive settings
+platform console serial
+!
+hostname AP1-IRIS
+!
+boot-start-marker
+boot-end-marker
+!
+!
+logging console emergencies
+aaa new-model
+!
+!
+aaa group server radius GRP-RADIUS
+ server name WinNPS
+ server name DebRADIUS
+!
+aaa authentication dot1x DOT1X-IRIS group GRP-RADIUS
+aaa authorization network DOT1X-IRIS group GRP-RADIUS
+aaa accounting network DOT1X-IRIS start-stop group GRP-RADIUS
+!
+!
+aaa session-id common
+no fips authorization-key
+!
+!
+ip dhcp pool INTERNAL_AP
+ network 192.168.50.0 255.255.255.0
+ default-router 192.168.50.254
+ option 43 hex f104.c0a8.3296
+!
+!
+!
+login on-success log
+!
+!
+!
+!
+!
+!
+flow exporter default-flow-exporter
+ destination local wlc
+!
+!
+flow monitor default-flow-monitor
+ exporter default-flow-exporter
+ record wireless avc basic
+!
+!
+crypto pki trustpoint TP-self-signed-867536979
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-867536979
+ revocation-check none
+ rsakeypair TP-self-signed-867536979
+ hash sha512
+!
+!
+crypto pki certificate chain TP-self-signed-867536979
+ certificate self-signed 01
+  3082032E 30820216 A0030201 02020101 300D0609 2A864886 F70D0101 0D050030
+  30312E30 2C060355 04030C25 494F532D 53656C66 2D536967 6E65642D 43657274
+  69666963 6174652D 38363735 33363937 39301E17 0D323630 34323930 39343233
+  325A170D 33363034 32383039 34323332 5A303031 2E302C06 03550403 0C25494F
+  532D5365 6C662D53 69676E65 642D4365 72746966 69636174 652D3836 37353336
+  39373930 82012230 0D06092A 864886F7 0D010101 05000382 010F0030 82010A02
+  82010100 E91EBBDE AB4F9BF6 488C88F9 A877A8C0 447A88A2 A8E1350A 4C604D78
+  31428EDD 7CFB758A 6CB84DD8 400DF701 ABDE084B C99CC667 07ED3115 C0F87F6D
+  E9FE9219 672F8C79 6CB356B3 1FE96C17 8446D8D6 9AC9A310 4F9FD55D 4600E0A9
+  1A6A3595 73034E23 6974C0DE 8044E738 5A7194F4 276149FE 979D2C1D 7E615C73
+  B944A611 2335A063 7C37BB29 EBF15BD5 447ED370 A18EBD50 8ED6EB05 E179C0E8
+  88F1995A E67D372A FEED860D 0D28799D A80177DE 955D8C24 2B7B8053 54205A0A
+  EAC598D0 CE8785D2 EA82AF31 3F0BB966 90DFE157 5EA10054 E6C9EB44 7B03046C
+  86945A59 D924F45C 06F0F6EC B413B480 F6716B32 98239EA2 968EC9F7 2A5929A7
+  44525AA5 02030100 01A35330 51301D06 03551D0E 04160414 3C2DE5B8 CB641A91
+  AA3269A8 7BE74647 0C5E0C22 301F0603 551D2304 18301680 143C2DE5 B8CB641A
+  91AA3269 A87BE746 470C5E0C 22300F06 03551D13 0101FF04 05300301 01FF300D
+  06092A86 4886F70D 01010D05 00038201 0100D69B 63AE3821 BFDD0771 E0C2E930
+  01DDB14C 16675C6F 49793CAD 96FD9076 FB36313F 14AFC0D5 3976A783 A826F3D5
+  41137CCC 1A934D8F 0781406F 0253B40A 10AF3245 2B629447 EA8E803B F794D381
+  CCF7E0C1 0B62D188 E81B849F F1D49999 6E1F853A 3005F68E D4A0271D D6F9E7A7
+  E57C0143 4811B0BA 766AE44F AD7FBECE CE6B9A5B DCEA69C7 F9D67000 E1B8F2C2
+  D4D280F6 2A57B482 59AAC955 AB1A0CCE 119A9FBE F89E39C1 7593E2F5 5E61A493
+  24EF3598 F179DBF6 F50053C0 1BF26CEC A48E4F85 8DF5411C C0861654 3AFDC979
+  6325FCFD 623EB2FE 32D33D8E C52DE3E0 8F5507F8 DC026A9E 36002C09 C36FA9F1
+  C605531C E8817209 511E8C30 599F8BCB 2A88
+        quit
+!
+!
+dot1x system-auth-control
+archive
+ path tftp://192.168.50.100/AP/AP1-conf
+ write-memory
+memory free low-watermark processor 12093
+device classifier
+license udi pid C9800-AP sn FGL2637L5RG
+!
+enable secret 9 $9$Zd7y7ON9nAxhWk$S6tuiBDflvYuDD.rb/KOCq.rrAqEFWp4ezPfUI.KZ7Y
+!
+username admin privilege 15 secret 9 $9$CjNAD8jS.MVx1k$z3SwLf6SbwQNpE2tMBrKE2cJYOedG.yfmjBHNdpom7Y
+!
+redundancy
+ mode sso
+!
+crypto engine compliance shield disable
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0
+ mac-address 0000.5e00.0101
+ ip dhcp client client-id GigabitEthernet0
+ ip dhcp client broadcast-flag clear
+ ip address 192.168.50.150 255.255.255.0
+ no negotiation auto
+!
+ip forward-protocol nd
+ip tftp source-interface GigabitEthernet0
+ip tftp blocksize 8192
+ip http server
+ip http authentication local
+ip http secure-server
+ip http secure-trustpoint CISCO_IDEVID_SUDI
+ip http client source-interface GigabitEthernet0
+ip ssh bulk-mode 131072
+ip route 0.0.0.0 0.0.0.0 192.168.50.254
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet0 250
+!
+logging trap debugging
+logging host 192.168.50.100 transport udp port 1514
+snmp-server community BTS_SIO RO
+snmp-server community IRIS-READ RO RO*
+!
+radius-server retransmit 1
+radius-server timeout 2
+!
+radius server WinNPS
+ address ipv4 192.168.50.200 auth-port 1812 acct-port 1813
+ key 7 073D2048471C0A36121119091003190D1B
+!
+radius server DebRADIUS
+ address ipv4 192.168.50.100 auth-port 1812 acct-port 1813
+ key 7 1425130F05113918212B2130363A353F30
+!
+!
+control-plane
+!
+banner exec ^C
+########################################################################################################
+#                                                                                                      #
+#      Welcome to the Cisco Catalyst C9800-AP Embedded Wireless Controller command line interface      #
+#                                                                                                      #
+#                      !!! Please complete the DAY0 Device Provisioning !!!                            #
+#                   !!! NOTE: COMPLETE ALL THE STEPS IN PROVISIONING GUIDE !!!                         #
+#                                                                                                      #
+#                     To access the provisioning guide type the below command:                         #
+#                         more bootflash:ewc_day0_device_provisioning_guide                            #
+#                                                                                                      #
+########################################################################################################
+^C
+!
+line con 0
+ exec-timeout 0 0
+ stopbits 1
+line vty 0
+ exec-timeout 5 0
+ transport input ssh
+line vty 1 4
+ transport input ssh
+line vty 5 15
+ transport input ssh
+!
+ntp server 192.168.50.200 prefer
+ntp server 192.168.50.100
+ntp server 1.ciscome.pool.ntp.org
+ntp server 0.ciscome.pool.ntp.org
+ntp server 2.ciscome.pool.ntp.org
+!
+!
+!
+!
+!
+wireless aaa policy default-aaa-policy
+wireless cts-sxp profile default-sxp-profile
+wireless management interface GigabitEthernet0
+wireless profile airtime-fairness default-atf-policy 0
+wireless profile dot11be default-dot11be-profile
+ description "Default 802.11be profile"
+wireless profile flex default-flex-profile
+ description "default flex profile"
+ vlan-name Iris
+  vlan-id 10
+ vlan-name Profs
+  vlan-id 20
+ vlan-name Administration
+  vlan-id 30
+wireless profile image-download default
+ description "default image download profile"
+wireless profile mesh default-mesh-profile
+ description "default mesh profile"
+wireless profile radio default-radio-profile
+ description "Preconfigured default radio profile"
+wireless profile policy default-policy-profile
+ aaa-override
+ no central association
+ no central dhcp
+ no central switching
+ description "default policy profile"
+ dhcp-tlv-caching
+ http-tlv-caching
+ ipv4 flow monitor default-flow-monitor input
+ ipv4 flow monitor default-flow-monitor output
+ no shutdown
+wireless tag site default-site-tag
+ description "default site tag"
+ no local-site
+wireless tag policy default-policy-tag
+ description "default policy-tag"
+ wlan IRIS-WIFI policy default-policy-profile
+ wlan CiscoAirProvision policy default-policy-profile
+wireless tag rf default-rf-tag
+ description "default RF tag"
+wireless country FR
+wlan IRIS-WIFI 1 IRIS-WIFI
+ security dot1x authentication-list DOT1X-IRIS
+ no shutdown
+ap dot11 24ghz rf-profile Low_Client_Density_rf_24gh
+ coverage data rssi threshold -90
+ coverage level 2
+ coverage voice rssi threshold -90
+ description "pre configured Low Client Density rfprofile for 2.4gh radio"
+ high-density rx-sop threshold low
+ rate RATE_12M supported
+ rate RATE_24M supported
+ rate RATE_6M supported
+ tx-power v1 threshold -65
+ no shutdown
+ap dot11 24ghz rf-profile High_Client_Density_rf_24gh
+ description "pre configured High Client Density rfprofile for 2.4gh radio"
+ high-density rx-sop threshold medium
+ rate RATE_11M disable
+ rate RATE_12M mandatory
+ rate RATE_1M disable
+ rate RATE_24M supported
+ rate RATE_2M disable
+ rate RATE_5_5M disable
+ rate RATE_6M disable
+ tx-power min 7
+ no shutdown
+ap dot11 24ghz rf-profile Typical_Client_Density_rf_24gh
+ description "pre configured Typical Client Density rfprofile for 2.4gh radio"
+ rate RATE_11M disable
+ rate RATE_12M mandatory
+ rate RATE_1M disable
+ rate RATE_24M supported
+ rate RATE_2M disable
+ rate RATE_5_5M disable
+ rate RATE_6M disable
+ no shutdown
+ap dot11 24ghz rate RATE_12M supported
+ap dot11 24ghz rate RATE_24M supported
+ap dot11 24ghz rate RATE_6M supported
+ap dot11 5ghz rf-profile Low_Client_Density_rf_5gh
+ coverage data rssi threshold -90
+ coverage level 2
+ coverage voice rssi threshold -90
+ description "pre configured Low Client Density rfprofile for 5gh radio"
+ high-density rx-sop threshold low
+ rate RATE_12M mandatory
+ rate RATE_24M mandatory
+ rate RATE_6M mandatory
+ tx-power v1 threshold -60
+ no shutdown
+ap dot11 5ghz rf-profile High_Client_Density_rf_5gh
+ description "pre configured High Client Density rfprofile for 5gh radio"
+ high-density rx-sop threshold medium
+ rate RATE_12M mandatory
+ rate RATE_24M mandatory
+ rate RATE_6M disable
+ rate RATE_9M disable
+ tx-power min 7
+ tx-power v1 threshold -65
+ no shutdown
+ap dot11 5ghz rf-profile Typical_Client_Density_rf_5gh
+ description "pre configured Typical Density rfprofile for 5gh radio"
+ rate RATE_12M mandatory
+ rate RATE_24M mandatory
+ rate RATE_6M mandatory
+ no shutdown
+ap dot11 5ghz rate RATE_12M mandatory
+ap dot11 5ghz rate RATE_24M mandatory
+ap dot11 5ghz rate RATE_6M mandatory
+ap tri-radio
+ap tag-source-priority 2 source filter
+ap tag-source-priority 3 source ap
+ap profile default-ap-profile
+ country FR
+ description "default ap profile"
+end
+
+AP1-IRIS#

@@ -1,0 +1,174 @@
+edib@VRouteur:~$ cat /etc/network/interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+allow-hotplug enp7s0
+iface enp7s0 inet dhcp
+
+
+auto enp3s0
+iface enp3s0 inet static
+        address 192.168.50.252
+        netmask 255.255.255.0
+
+# VLAN 10 - Etudiants
+auto enp3s0.10
+iface enp3s0.10 inet static
+    address 192.168.10.252
+    netmask 255.255.255.0
+
+# VLAN 20 - Profs
+auto enp3s0.20
+iface enp3s0.20 inet static
+    address 192.168.20.252
+    netmask 255.255.255.0
+
+# VLAN 30 - Admin
+auto enp3s0.30
+iface enp3s0.30 inet static
+    address 192.168.30.252
+    netmask 255.255.255.0
+edib@VRouteur:~$ cat /etc/network/interfaces.d/* 2>/dev/null
+edib@VRouteur:~$ cat /etc/sysctl.conf | grep net.ipv4.ip_forward
+#net.ipv4.ip_forward=1
+edib@VRouteur:~$ cat /etc/keepalived/keepalived.conf
+# Instance VLAN 50 (Infrastructure)
+vrrp_instance VI_50 {
+    state BACKUP
+    interface enp3s0
+    virtual_router_id 50
+    priority 100
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1234
+    }
+    virtual_ipaddress {
+        192.168.50.254/24
+    }
+}
+
+# Instance VLAN 10 (Etudiants)
+vrrp_instance VI_10 {
+    state BACKUP
+    interface enp3s0.10
+    virtual_router_id 10
+    priority 100
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1234
+    }
+    virtual_ipaddress {
+        192.168.10.254/24
+    }
+}
+
+# Instance VLAN 20 (Profs)
+vrrp_instance VI_20 {
+    state BACKUP
+    interface enp3s0.20
+    virtual_router_id 20
+    priority 100
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1234
+    }
+    virtual_ipaddress {
+        192.168.20.254/24
+    }
+}
+
+# Instance VLAN 30 (Admin)
+vrrp_instance VI_30 {
+    state BACKUP
+    interface enp3s0.30
+    virtual_router_id 30
+    priority 100
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1234
+    }
+    virtual_ipaddress {
+        192.168.30.254/24
+    }
+}
+edib@VRouteur:~$ cat /etc/kea/kea-dhcp4.conf
+{
+  "Dhcp4": {
+    "interfaces-config": {
+      "interfaces": [
+        "enp3s0",
+        "enp3s0.10",
+        "enp3s0.20",
+        "enp3s0.30"
+      ]
+    },
+    "control-socket": {
+      "socket-type": "unix",
+      "socket-name": "/tmp/kea4-ctrl-socket"
+    },
+    "lease-database": {
+      "type": "memfile",
+      "persist": true,
+      "name": "/var/lib/kea/kea-leases4.csv"
+    },
+    "valid-lifetime": 3600,
+    "subnet4": [
+      {
+        "id": 1,
+        "subnet": "192.168.10.0/24",
+        "pools": [ { "pool": "192.168.10.10 - 192.168.10.200" } ],
+        "option-data": [
+          { "name": "routers", "data": "192.168.10.254" },
+          { "name": "domain-name-servers", "data": "8.8.8.8, 1.1.1.1" }
+        ]
+      },
+      {
+        "id": 2,
+        "subnet": "192.168.20.0/24",
+        "pools": [ { "pool": "192.168.20.10 - 192.168.20.200" } ],
+        "option-data": [
+          { "name": "routers", "data": "192.168.20.254" },
+          { "name": "domain-name-servers", "data": "8.8.8.8, 1.1.1.1" }
+        ]
+      },
+      {
+        "id": 3,
+        "subnet": "192.168.30.0/24",
+        "pools": [ { "pool": "192.168.30.10 - 192.168.30.200" } ],
+        "option-data": [
+          { "name": "routers", "data": "192.168.30.254" },
+          { "name": "domain-name-servers", "data": "8.8.8.8, 1.1.1.1" }
+        ]
+      },
+      {
+        "id": 50,
+        "subnet": "192.168.50.0/24",
+        "pools": [ { "pool": "192.168.50.100 - 192.168.50.150" } ],
+        "option-data": [
+          { "name": "routers", "data": "192.168.50.254" }
+        ],
+        "reservations": [
+          {
+            "hw-address": "34:5d:a8:48:74:48",
+            "ip-address": "192.168.50.160",
+            "hostname": "AP1-IRIS"
+          }
+        ]
+      }
+    ]
+  }
+}
+edib@VRouteur:~$ cat /etc/kea/kea-ctrl-agent.conf
+cat: /etc/kea/kea-ctrl-agent.conf: Aucun fichier ou dossier de ce type
+edib@VRouteur:~$

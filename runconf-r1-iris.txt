@@ -1,0 +1,182 @@
+edib@debian-rp:/srv/tftp/ROUTER$ cat R1-IRIS--May--6-09-58-34.375.cfg-1
+
+!
+! Last configuration change at 11:58:00 CEST Wed May 6 2026 by admin
+! NVRAM config last updated at 11:58:32 CEST Wed May 6 2026 by admin
+!
+version 15.5
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R1-IRIS
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$LmVe$mU5NY0XLZBd51MbEYWTwZ.
+!
+aaa new-model
+!
+!
+!
+!
+!
+!
+!
+aaa session-id common
+bsd-client server url https://cloudsso.cisco.com/as/token.oauth2
+clock timezone CET 1 0
+clock summer-time CEST recurring
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip domain name iris.local
+ip cef
+no ipv6 cef
+multilink bundle-name authenticated
+!
+cts logging verbose
+!
+!
+license udi pid CISCO1941/K9 sn FCZ2142B2HV
+license boot module c1900 technology-package securityk9
+license boot module c1900 technology-package datak9
+!
+!
+archive
+ log config
+  logging enable
+  hidekeys
+ path tftp://192.168.50.100/ROUTER/$h-$t.cfg
+ write-memory
+username admin privilege 15 secret 5 $1$Z7S7$fEK9b8605eAKFYPwQ3CN61
+!
+redundancy
+!
+!
+ip ssh version 2
+!
+!
+!
+!
+interface Embedded-Service-Engine0/0
+ no ip address
+ shutdown
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet0/0.10
+ description --- VLAN_IRIS ---
+ encapsulation dot1Q 10
+ ip address 192.168.10.251 255.255.255.0
+ ip access-group ACL_ETUDIANTS in
+ ip helper-address 192.168.50.254
+ vrrp 10 ip 192.168.10.254
+ vrrp 10 priority 50
+ vrrp 10 authentication 1234
+!
+interface GigabitEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.20.251 255.255.255.0
+ ip helper-address 192.168.50.100
+ vrrp 20 ip 192.168.20.254
+ vrrp 20 priority 50
+ vrrp 20 authentication 1234
+!
+interface GigabitEthernet0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.30.251 255.255.255.0
+ ip helper-address 192.168.50.100
+ vrrp 30 ip 192.168.30.254
+ vrrp 30 priority 50
+ vrrp 30 authentication 1234
+!
+interface GigabitEthernet0/0.40
+ description --- VLAN_GUEST ---
+ encapsulation dot1Q 40
+ ip address 192.168.40.251 255.255.255.0
+ ip access-group ACL_GUEST in
+ ip helper-address 192.168.50.100
+!
+interface GigabitEthernet0/0.50
+ encapsulation dot1Q 50
+ ip address 192.168.50.251 255.255.255.0
+ vrrp 50 ip 192.168.50.254
+ vrrp 50 priority 50
+ vrrp 50 authentication 1234
+!
+interface GigabitEthernet0/0.99
+ encapsulation dot1Q 99 native
+ ip address 192.168.99.251 255.255.255.0
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+!
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+!
+ip access-list extended ACL_ETUDIANTS
+ permit udp any host 192.168.50.254 eq bootps
+ permit udp any host 192.168.50.252 eq bootps
+ permit ip any host 192.168.50.100
+ deny   ip any 192.168.20.0 0.0.0.255
+ deny   ip any 192.168.30.0 0.0.0.255
+ deny   ip any 192.168.40.0 0.0.0.255
+ deny   ip any 192.168.50.0 0.0.0.255
+ permit ip any any
+!
+logging trap debugging
+logging origin-id hostname
+logging host 192.168.50.100
+!
+!
+snmp-server community BTS_SIO RO
+snmp-server community public RO
+snmp-server community IRIS-READ RO
+snmp-server contact Edib-Admin
+radius-server host 192.168.50.200 auth-port 1812 acct-port 1813 key RadiusSecretIRIS
+radius-server host 192.168.50.100 auth-port 1812 acct-port 1813 key RadiusSecretIRIS
+!
+!
+!
+control-plane
+!
+!
+!
+line con 0
+line aux 0
+line 2
+ no activation-character
+ no exec
+ transport preferred none
+ transport output pad telnet rlogin lapb-ta mop udptn v120 ssh
+ stopbits 1
+line vty 0 4
+ transport input ssh
+!
+scheduler allocate 20000 1000
+ntp update-calendar
+ntp server 192.168.50.200 prefer
+ntp server 192.168.50.100
+!
+end
+edib@debian-rp:/srv/tftp/ROUTER$

@@ -1,0 +1,679 @@
+SW1-IRIS#show run
+Building configuration...
+
+Current configuration : 18079 bytes
+!
+! Last configuration change at 03:28:23 CEST Wed Mar 30 2011
+!
+version 15.2
+no service pad
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname SW1-IRIS
+!
+boot-start-marker
+boot-end-marker
+!
+logging console informational
+enable secret 5 $1$8JjL$HdSeBqDZei7NchkMH7YkW0
+!
+username admin privilege 15 secret 5 $1$oT/W$X49v/aLDLgYZ3RPTiLi0D/
+aaa new-model
+!
+!
+aaa group server radius RAD_GROUP
+ server name Windows_NPS
+ server name MON_RADIUS
+!
+aaa authentication dot1x default group radius
+aaa authorization network default group radius
+!
+!
+!
+!
+!
+!
+aaa session-id common
+clock timezone CET 1 0
+clock summer-time CEST recurring
+switch 1 provision ws-c2960s-48fps-l
+!
+!
+ip domain-name iris.local
+!
+!
+!
+!
+!
+!
+!
+crypto pki trustpoint TP-self-signed-14207232
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-14207232
+ revocation-check none
+ rsakeypair TP-self-signed-14207232
+!
+!
+crypto pki certificate chain TP-self-signed-14207232
+ certificate self-signed 01
+  30820227 30820190 A0030201 02020101 300D0609 2A864886 F70D0101 05050030
+  2F312D30 2B060355 04031324 494F532D 53656C66 2D536967 6E65642D 43657274
+  69666963 6174652D 31343230 37323332 301E170D 31313033 33303031 32383334
+  5A170D32 30303130 31303030 3030305A 302F312D 302B0603 55040313 24494F53
+  2D53656C 662D5369 676E6564 2D436572 74696669 63617465 2D313432 30373233
+  3230819F 300D0609 2A864886 F70D0101 01050003 818D0030 81890281 8100BCA0
+  58080FE5 D6F559F2 EF26082B 87AA7E55 560D3348 06ECB7F3 B6613C48 0D08C38A
+  F229B27C 8CD8C9D6 CA13E9F3 7C54D9AB 0EBBA20E 3BDAA33C 421FFF40 642D9EA0
+  4507192E EC793CFC 0EB60F30 43E1DEDD A22C7E9F 1479E993 94D90D36 A365AE7A
+  690C2410 2EFBD362 7AC6E3CA 4D712C40 98A8639D 86FBE84C DBB59FBB C5790203
+  010001A3 53305130 0F060355 1D130101 FF040530 030101FF 301F0603 551D2304
+  18301680 14ADA3A7 5010FF71 EBD051D0 50264512 90B99024 44301D06 03551D0E
+  04160414 ADA3A750 10FF71EB D051D050 26451290 B9902444 300D0609 2A864886
+  F70D0101 05050003 81810070 1010A9E7 89589903 9823D82D 26424C00 C5513EF6
+  8FAABC73 96F412AA B0BCFAA3 4765AC59 514CE73C 7C5F72EF 6CBB39DB F1DE0EC6
+  42B59A70 0A992547 2A0DAFB5 50B6A559 862A4452 D97168CF 77D79341 F15DB298
+  8CE6C022 1B891755 1E831311 D5072EF6 342454B0 66247B13 732676E4 AE005E0B
+  024B899E D44A5035 55F83D
+        quit
+archive
+ path tftp://192.168.50.100/SWITCH/$h-$t.cfg
+ write-memory
+dot1x system-auth-control
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+!
+!
+!
+vlan internal allocation policy ascending
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback99
+ no ip address
+!
+interface FastEthernet0
+ no ip address
+!
+interface GigabitEthernet1/0/1
+ description --- UPLINK_VERS_ROUTEUR ---
+ switchport trunk allowed vlan 10,20,30,40,50,99
+ switchport mode trunk
+!
+interface GigabitEthernet1/0/2
+ description --- ACCES_MANAGEMENT_INFRA ---
+ switchport access vlan 50
+ switchport trunk native vlan 99
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/3
+ description LIAISON_AP_IRIS
+ switchport access vlan 50
+ switchport trunk native vlan 50
+ switchport trunk allowed vlan 10,20,30,40,50,99
+ switchport mode trunk
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/4
+ description --- ACCES_MANAGEMENT_INFRA ---
+ switchport access vlan 50
+ switchport trunk native vlan 99
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/5
+ description --- ACCES_MANAGEMENT_INFRA ---
+ switchport access vlan 50
+ switchport trunk native vlan 99
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/6
+ description --- ACCES_MANAGEMENT_INFRA ---
+ switchport access vlan 50
+ switchport trunk native vlan 99
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/7
+ description --- ACCES_MANAGEMENT_INFRA ---
+ switchport access vlan 50
+ switchport trunk native vlan 99
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/8
+ description --- ACCES_MANAGEMENT_INFRA ---
+ switchport access vlan 50
+ switchport trunk native vlan 99
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/9
+ description --- ACCES_MANAGEMENT_INFRA ---
+ switchport access vlan 50
+ switchport trunk native vlan 99
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/10
+ description --- ACCES_MANAGEMENT_INFRA ---
+ switchport access vlan 50
+ switchport trunk native vlan 99
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/11
+ description --- ACCES_MANAGEMENT_INFRA ---
+ switchport access vlan 50
+ switchport trunk native vlan 50
+ switchport trunk allowed vlan 10,20,30,40,50,99
+ switchport mode trunk
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/12
+ description --- ACCES_MANAGEMENT_INFRA ---
+ switchport access vlan 50
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/13
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/14
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/15
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ dot1x pae authenticator
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/16
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/17
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/18
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/19
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/20
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/21
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/22
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/23
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/24
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/25
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/26
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/27
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/28
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/29
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/30
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/31
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/32
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/33
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/34
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/35
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/36
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/37
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/38
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/39
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/40
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/41
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/42
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/43
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/44
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/45
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,20,30,99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/46
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/47
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/48
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,20,30,40,99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/49
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/50
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/51
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface GigabitEthernet1/0/52
+ description ZONE_UTILISATEURS_DYNAMIQUE
+ switchport access vlan 99
+ switchport trunk native vlan 99
+ switchport mode access
+ authentication port-control auto
+ authentication violation protect
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
+ spanning-tree portfast
+!
+interface Vlan1
+ no ip address
+!
+interface Vlan50
+ ip address 192.168.50.253 255.255.255.0
+!
+interface Vlan99
+ no ip address
+!
+ip default-gateway 192.168.50.254
+ip http server
+ip http secure-server
+!
+!
+ip radius source-interface Vlan50
+logging source-interface Vlan50
+logging host 192.168.50.100
+logging host 192.168.50.100 transport udp port 1514
+!
+snmp-server community BTS_SIO RO
+snmp-server community public RO
+snmp-server community IRIS-READ RO
+snmp-server contact Edib-Admin
+!
+radius-server host 192.168.50.100 auth-port 1812 acct-port 1813 key RadiusSecretIRIS
+!
+radius server Windows_NPS
+ address ipv4 192.168.50.200 auth-port 1812 acct-port 1813
+ key RadiusSecretIRIS
+!
+!
+!
+line con 0
+line vty 0 4
+ password rleezeasyouwish
+ transport input ssh
+line vty 5 15
+ password rleezeasyouwish
+ transport input ssh
+!
+ntp server 192.168.50.100 prefer
+end
+
+SW1-IRIS#
